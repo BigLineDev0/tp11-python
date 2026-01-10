@@ -162,14 +162,15 @@ def taux_presence():
             absents = absents + 1
     try:       
         taux_presence = (presents / total_apprenant ) * 100
-        print(f"Nombre total d'apprenants {total_apprenant}")
-        print(f"Nombre de présents : {presents}")
-        print(f"Nombre d'absents : {absents}")
-        print(f"Taux de présence : {taux_presence} %")
-        print("-" * 40)
-
     except ZeroDivisionError:
         print("Aucun taux car la liste des apprenants est vide")
+
+    print("---- Taux de Présence ----")
+    print(f"Nombre total d'apprenants {total_apprenant}")
+    print(f"Nombre de présents : {presents}")
+    print(f"Nombre d'absents : {absents}")
+    print(f"Taux de présence : {taux_presence} %")
+    print("-" * 40)
 
 # Fonction afficher le menu
 def menu():
@@ -188,7 +189,7 @@ def menu():
 def main():
     while  True:
         menu()
-        choix = input("\n Choisissez une option : ")
+        choix = input("\nChoisissez une option : ")
             
         if choix == '1':
             ajouter_apprenant()
@@ -206,6 +207,6 @@ def main():
             print("Au revoir!")
             break 
         else:
-            print("\n Option invalide, veuillez réessayer.")
+            print("\nOption invalide, veuillez réessayer.")
 
 main()

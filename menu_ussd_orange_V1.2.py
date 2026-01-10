@@ -2,9 +2,11 @@
 
 # Solde initial au demarage
 solde = 10000
-float(solde)
+solde = float(solde)
 
 CODE_SECRET = 9900
+
+historiques_transferts = []
 
 # Fonction pour verifier le code secret 
 def verifier_code_secret():
@@ -32,6 +34,9 @@ def menu_principale():
     print("1. Consulter le solde")
     print("2. Effectuer des transferts")
     print("3. Acheter du crédit")
+    print("4. Acheter un forfait")
+    print("5. Historique des transferts")
+    print("6. Annuler le dernier transfert")
     print("0. Quitter")
     print("-" * 40, "\n")
 
@@ -42,7 +47,7 @@ def code_ussd():
     while True:
         code = input("Composer votre USSD (ex: #144#) : ").strip()
 
-        if code.startswith('#') and code.endswith('#') and code == '#144#':
+        if code == '#144#':
             break
         else:
             print("Code invalide. Vueillez réessayer")
@@ -90,20 +95,21 @@ def saisir_montant(message):
 # Fonction pour saisir un numéro de téléphone
 def saisir_numero():
     while True:
-        numero = input("Numéro de téléphone : ").strip()
-        # revoir le numero 
-        if numero.isdigit() and len(numero) in [9, 10]:
+        numero = input("Numéro de téléphone : ").replace(" ", "").strip()
+       
+        if numero.isdigit() and len(numero) == 9 and numero.startswith(("77", "78", "71")):
             return numero
         else:
-            print("Numéro invalide. Exemple : 771234567")
+            print("Numéro invalide. Exemple : 772345678")
 
 
 # Fonction pour consuler le solde
 def consuler_solde():
     global solde
-    print(f"Solde actuel : {solde} FCFA.")
-    print("9. Accueil \n")
-
+    if verifier_code_secret():
+        print(f"Solde actuel : {solde} FCFA.")
+        print("9. Accueil \n")
+    
 
 # Fonction pour effectuer des transferts
 def effectuer_transfert():
@@ -127,6 +133,16 @@ def effectuer_transfert():
 
             if verifier_code_secret():
                 solde -= montant
+
+                transfert = {
+                    "montant": montant,
+                    'tel': numero
+                }
+
+                historiques_transferts.append(transfert)
+
+                historiques_transferts.append(f"Vous avez transfere {montant}f à {numero}")
+
                 print(f"Transfert réussi. Nouveau solde : {solde} FCFA")
                 # essayer de facotirser lcette partie
         else:
@@ -193,6 +209,112 @@ def acheter_credit():
     elif choix == '9':
         menu_principale()
 
+# Acheter forfait 100 MO
+def forfait_1():
+    global solde
+
+    montant = 500
+    if montant > solde:
+        print("Solde insuffisant.")
+        return
+
+    if confirmer(f"Acheter {montant} FCFA de forfait ?"):
+        if verifier_code_secret():
+            solde -= montant
+            print(f"Forfait 100 MO acheté. Nouveau solde : {solde} FCFA")
+    else:
+        print("Opération annulée")
+
+# Acheter forfait 500 MO
+def forfait_2():
+    global solde
+    montant = 1000
+    if montant > solde:
+        print("Solde insuffisant.")
+        return
+
+    if confirmer(f"Acheter {montant} FCFA de forfait ?"):
+        if verifier_code_secret():
+            solde -= montant
+            print(f"Forfait 500 MO acheté. Nouveau solde : {solde} FCFA")
+    else:
+        print("Opération annulée")
+
+# Acheter forfait 1 GO
+def forfait_3():
+    global solde
+    montant = 2000
+    if montant > solde:
+        print("Solde insuffisant.")
+        return
+
+    if confirmer(f"Acheter {montant} FCFA de forfait ?"):
+        if verifier_code_secret():
+            solde -= montant
+            print(f"Forfait 1 GO acheté. Nouveau solde : {solde} FCFA")
+    else:
+        print("Opération annulée")
+
+#Fonction pour acheter un forfait
+def acheter_forfait():
+
+    print('1. Pass 100 Mo – 500 F')
+    print('2. Pass 500 Mo – 1 000 F')
+    print('3. Pass 1 Go – 2 000 F')
+    print("-" * 40)
+    print("9. Accueil")
+
+    choix = saisir_choix(['1', '2', '3', '9'])
+
+    if choix == '1':
+        forfait_1()
+
+    elif choix == '2':
+        forfait_2()
+
+    elif choix == '3':
+        forfait_3()
+
+    elif choix == '9':
+        menu_principale()
+    else:
+        print("Opération annulée")
+      
+
+# Fonction pour afficher les transferts
+def afficher_transferts():
+    if not historiques_transferts:
+        print("Aucun transfert éffectuer")
+        return
+    
+    print("\n Historique des Transferts")
+
+    for i, historique in enumerate(historiques_transferts, 1):
+        print(f"{i}. Transfert {historique['montant']} FCFA vers {historique['tel']}")
+
+    print("---")
+    print("9. Accueil")
+
+# Fonction pour annuler le dernier transfert
+def annuler_dernier_transfert():
+    global solde
+    if not historiques_transferts:
+        print("Aucun transfert. Annulation impossible")
+        return
+    print("9. Accueil")
+
+    dernier_transfert = historiques_transferts[-1]
+
+    montant = historiques_transferts[-1]['montant']
+    numero = historiques_transferts[-1]['tel']
+
+    if(dernier_transfert):
+        if confirmer(f"Voulez-vous annuler le dernier transfer : {montant}F vers {numero} ?"):
+            if verifier_code_secret():
+                solde += montant
+                print(f"Transfert annulé : Montant {montant}. Nouveau solde : {solde} FCFA")
+    else:
+        print("Opération annulée")
 
 # Fonction principale pour demarer le programme
 def main():
@@ -200,11 +322,9 @@ def main():
     code_ussd()
 
     menu_principale() 
-    # mettre le menu menu principale dans la boucle while
-
     while True:
 
-        choix = saisir_choix(['1', '2', '3', '9', '0'])
+        choix = saisir_choix(['1', '2', '3', '4', '5', '6', '9', '0'])
 
         if choix == '1':
             consuler_solde()
@@ -214,6 +334,15 @@ def main():
 
         elif choix == '3':
             acheter_credit()
+
+        elif choix == '4':
+            acheter_forfait()
+        
+        elif choix == '5':
+            afficher_transferts()
+
+        elif choix == '6':
+            annuler_dernier_transfert()
 
         elif choix == "9":
             menu_principale()
@@ -229,4 +358,3 @@ main()
 # re.fullmatch(expression, numero)
 
 # os est un module qui permet d'interagir avec le systeme
-# la variable solde  et le code ussd orange à revoir 
